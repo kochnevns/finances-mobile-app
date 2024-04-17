@@ -5,8 +5,7 @@
  * @format
  */
 
-import React from 'react';
-import type { PropsWithChildren } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -19,63 +18,49 @@ import {
   Image,
   Button,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 
 import {
   Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+import { Home } from './components/pages/Home';
+import { Reports } from './components/pages/Reports';
 
 const Tab = createBottomTabNavigator();
 
-
-function Section({ children, title }: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
 
 function App(): React.JSX.Element {
   return (
     <NavigationContainer theme={DarkTheme}>
       <Tab.Navigator>
-        <Tab.Screen name="Траты" component={ExpensesList} />
-        <Tab.Screen name="Отчеты" component={View} />
+        <Tab.Group>
+          <Tab.Screen name="Главная" component={Home} options={{
+            tabBarIcon: () => (
+              <Image
+                source={require('./assets/avatar.png')}
+                style={{ width: 24, height: 24, }}
+              />
+            ),
+            tabBarIconStyle: {
+              //color: '#fff',
+            }
+          }} />
+          <Tab.Screen name="Отчеты" component={Reports} />
+          <Tab.Screen name="Траты" component={ExpensesList} />
+        </Tab.Group>
       </Tab.Navigator>
     </NavigationContainer>
   );
 }
 
+interface DataItem {
+  title: string;
+  data: string[];
+}
 
 function ExpensesList(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -99,41 +84,85 @@ function ExpensesList(): React.JSX.Element {
     },
   ];
 
+  const [isLoading, setLoading] = useState(true);
+  const [data, setData] = useState<DataItem[]>(DATA);
+
+
+  const getMovies = async () => {
+    const response = await fetch('http://localhost:8082/finances.Finances/ExpensesList', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+    const json = await response.json();
+
+    const datesMap = {}
+
+    for (let i = 0; i < json.expenses.length; i++) {
+      const item = json.expenses[i];
+      if (!datesMap[item.date]) {
+        datesMap[item.date] = [];
+      }
+      datesMap[item.date].push(item.who + ';' + item.amount)
+      datesMap[item.date].push(item.who + ';' + item.amount)
+      datesMap[item.date].push(item.who + ';' + item.amount)
+      datesMap[item.date].push(item.who + ';' + item.amount)
+      datesMap[item.date].push(item.who + ';' + item.amount)
+    }
+
+    const newData = []
+
+    Object.keys(datesMap).forEach(key => {
+      newData.push({ title: key, data: datesMap[key] })
+    })
+    setData(newData);
+
+    setLoading(false);
+    // } catch (error) {
+    //   console.error(error);
+    // }
+  };
+
+  useEffect(() => {
+    getMovies();
+  }, []);
+
+
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.darker,
   };
 
   return (
     <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'dark-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <SectionList
-          sections={DATA}
-          keyExtractor={(item, index) => item + index}
-          renderItem={({ item }) => (
-            <View style={styles.item}>
-              <Image style={styles.category} source={require('./assets/logo.png')} />
-              <View style={styles.itemTitle}>
-                <Text style={styles.title}>{item}</Text>
-                {/* <Text style={styles.subtitle}>21.04.2024</Text> */}
-              </View>
+      {isLoading ? (
+        <ActivityIndicator />
+      ) : (
+        <View>
+          <SectionList
+              sections={data}
+              keyExtractor={(item, index) => item + index}
+              renderItem={({ item }) => (
+                <View style={styles.item}>
+                  <Image style={styles.category} source={require('./assets/logo.png')} />
+                  <View style={styles.itemTitle}>
+                    <Text style={styles.title}>{item.split(';')[0]}</Text>
+                    {/* <Text style={styles.subtitle}>21.04.2024</Text> */}
+                  </View>
 
-              <Text style={styles.amount}>1098.00 $</Text>
-            </View>
-          )}
-          renderSectionHeader={({ section: { title } }) => (
-            <Text style={styles.header}>{title}</Text>
-          )}
-        />
-
-      </ScrollView>
+                  <Text style={styles.amount}>{item.split(';')[1] + ' ₽'}</Text>
+                </View>
+              )}
+              renderSectionHeader={({ section: { title } }) => (
+                <Text style={styles.header}>{title}</Text>
+              )}
+            />
+        </View>
+      )}
 
       <View style={styles.button}>
+
         <Button
           title="Добавить"
           color="#ccc"
@@ -175,26 +204,28 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   item: {
-    backgroundColor: '#111111',
+    backgroundColor: '#212121',
     padding: 10,
     marginVertical: 0,
-    fontFamily: 'Helvetica',
+    //fontFamily: 'PSL Ornanong Pro',
     fontSize: 12,
     display: 'flex',
     flexDirection: 'row',
     width: '100%',
   },
   header: {
-    padding: 8,
+    padding: 10,
     fontSize: 14,
-    backgroundColor: '#222222',
+    fontFamily: 'Rockwell',
+    backgroundColor: '#323232',
     color: '#fff',
-    shadowColor: '#222',
+    shadowColor: '#111',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.8,
   },
   title: {
-    fontSize: 14,
+    fontSize: 12,
+    fontFamily: 'Tahoma',
     color: '#fff',
     borderBottomColor: '#fff',
     borderBottomWidth: 1,
@@ -228,14 +259,14 @@ const styles = StyleSheet.create({
 
   button: {
     position: 'absolute',
-    bottom: 16,
+    bottom: 8,
     right: 16,
     width: 100,
     borderRadius: 20,
     backgroundColor: '#444444',
     fontSize: 2,
-    shadowColor: '#333',
-    shadowOffset: { width: 2, height: 4 },
+    shadowColor: '#111',
+    shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.8,
   }
 });
