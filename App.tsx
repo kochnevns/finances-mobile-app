@@ -8,7 +8,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
-  ScrollView,
+  TouchableOpacity,
   StatusBar,
   StyleSheet,
   Text,
@@ -34,6 +34,7 @@ const Tab = createBottomTabNavigator();
 
 
 function App(): React.JSX.Element {
+  DarkTheme.colors.primary = '#00b3a1'
   return (
     <NavigationContainer theme={DarkTheme}>
       <Tab.Navigator>
@@ -41,16 +42,27 @@ function App(): React.JSX.Element {
           <Tab.Screen name="Главная" component={Home} options={{
             tabBarIcon: () => (
               <Image
-                source={require('./assets/avatar.png')}
+                source={require('./assets/home.png')}
                 style={{ width: 24, height: 24, }}
               />
             ),
-            tabBarIconStyle: {
-              //color: '#fff',
-            }
           }} />
-          <Tab.Screen name="Отчеты" component={Reports} />
-          <Tab.Screen name="Траты" component={ExpensesList} />
+          <Tab.Screen name="Отчеты" component={Reports} options={{
+            tabBarIcon: () => (
+              <Image
+                source={require('./assets/report.png')}
+                style={{ width: 24, height: 24, }}
+              />
+            ),
+          }} />
+          <Tab.Screen name="Траты" component={ExpensesList} options={{
+            tabBarIcon: () => (
+              <Image
+                source={require('./assets/wallet.png')}
+                style={{ width: 24, height: 24, }}
+              />
+            ),
+          }} />
         </Tab.Group>
       </Tab.Navigator>
     </NavigationContainer>
@@ -64,28 +76,8 @@ interface DataItem {
 
 function ExpensesList(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
-
-  const DATA = [
-    {
-      title: '21.02.2022',
-      data: ['Pizza', 'Burger', 'Risotto'],
-    },
-    {
-      title: '22.02.2022',
-      data: ['French Fries', 'Onion Rings', 'Fried Shrimps', 'French Fries', 'Onion Rings', 'Fried Shrimps', 'French Fries', 'Onion Rings', 'Fried Shrimps', 'French Fries', 'Onion Rings', 'Fried Shrimps'],
-    },
-    {
-      title: '23.02.2022',
-      data: ['Water', 'Coke', 'Beer'],
-    },
-    {
-      title: '25.02.2022',
-      data: ['Cheese Cake', 'Ice Cream'],
-    },
-  ];
-
   const [isLoading, setLoading] = useState(true);
-  const [data, setData] = useState<DataItem[]>(DATA);
+  const [data, setData] = useState<DataItem[]>([]);
 
 
   const getMovies = async () => {
@@ -105,10 +97,6 @@ function ExpensesList(): React.JSX.Element {
       if (!datesMap[item.date]) {
         datesMap[item.date] = [];
       }
-      datesMap[item.date].push(item.who + ';' + item.amount)
-      datesMap[item.date].push(item.who + ';' + item.amount)
-      datesMap[item.date].push(item.who + ';' + item.amount)
-      datesMap[item.date].push(item.who + ';' + item.amount)
       datesMap[item.date].push(item.who + ';' + item.amount)
     }
 
@@ -145,7 +133,9 @@ function ExpensesList(): React.JSX.Element {
               keyExtractor={(item, index) => item + index}
               renderItem={({ item }) => (
                 <View style={styles.item}>
-                  <Image style={styles.category} source={require('./assets/logo.png')} />
+                  <View style={styles.iconWrapper}>
+                    <Image style={styles.category} source={require('./assets/fastfood.png')} />
+                  </View>
                   <View style={styles.itemTitle}>
                     <Text style={styles.title}>{item.split(';')[0]}</Text>
                     {/* <Text style={styles.subtitle}>21.04.2024</Text> */}
@@ -161,24 +151,41 @@ function ExpensesList(): React.JSX.Element {
         </View>
       )}
 
-      <View style={styles.button}>
-
-        <Button
-          title="Добавить"
-          color="#ccc"
-          onPress={() => Alert.alert('Button with adjusted color pressed')}
-        />
-      </View>
+      <TouchableOpacity onPress={() => Alert.alert('Button with adjusted color pressed')} style={styles.appButtonContainer}>
+        <Image style={styles.add} source={require('./assets/add.png')} />
+      </TouchableOpacity>
 
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+
+  appButtonContainer: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    elevation: 8,
+    backgroundColor: "#00b3a1",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    zIndex: 200,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    transform: [{ scale: 0.76 }],
+    shadowColor: '#333',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+  },
+  add: {
+    width: 40,
+    height: 40,
+    marginTop: 2,
+  },
   sectionContainer: {
     marginTop: 32,
     paddingHorizontal: 24,
-    backgroundColor: '#434343',
   },
   sectionTitle: {
     fontSize: 24,
@@ -195,7 +202,6 @@ const styles = StyleSheet.create({
   },
 
   section: {
-    backgroundColor: '#434343',
     color: "#fff"
   },
   container: {
@@ -204,7 +210,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   item: {
-    backgroundColor: '#212121',
+    backgroundColor: "#111",
     padding: 10,
     marginVertical: 0,
     //fontFamily: 'PSL Ornanong Pro',
@@ -214,28 +220,41 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   header: {
-    padding: 10,
-    fontSize: 14,
-    fontFamily: 'Rockwell',
-    backgroundColor: '#323232',
-    color: '#fff',
+    padding: 16,
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#888',
     shadowColor: '#111',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
+    backgroundColor: '#111',
   },
   title: {
-    fontSize: 12,
-    fontFamily: 'Tahoma',
+    fontSize: 14,
     color: '#fff',
     borderBottomColor: '#fff',
     borderBottomWidth: 1,
-    paddingBottom: 5,
-    paddingTop: 4
+    paddingBottom: 16,
+    paddingTop: 6,
+    alignSelf: 'center'
+  },
+
+  iconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#ff8614',
+    marginRight: 10,
+    display: 'flex',
+    shadowColor: '#777',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
   },
   category: {
-    width: 24,
-    height: 24,
-    marginRight: 8,
+    width: 16,
+    height: 16,
+    alignSelf: 'center',
+    marginTop: 6,
   },
   subtitle: {
     fontSize: 8,
