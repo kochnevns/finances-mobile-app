@@ -48,12 +48,14 @@ const styles = StyleSheet.create({
 
     hello: {
         color: '#888',
-        fontSize: 12
+        fontSize: 12,
+        fontFamily: 'Onest-SemiBold'
     },
     name: {
         color: '#eee',
         fontSize: 18,
-        fontWeight: '500'
+        fontWeight: '500',
+        fontFamily: 'Onest-SemiBold'
     },
     flexVertical: {
         marginLeft: 10,

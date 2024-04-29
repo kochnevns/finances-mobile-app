@@ -21,7 +21,11 @@ import {
 // import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 // import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 
-export function MonthExpenses(): React.JSX.Element {
+type MonthExpensesProps = {
+    total: string;
+};
+
+export function MonthExpenses(props: MonthExpensesProps): React.JSX.Element {
     const now = new Date()
     const month = now.getMonth() + 1
 
@@ -47,7 +51,10 @@ export function MonthExpenses(): React.JSX.Element {
         <SafeAreaView style={styles.month}>
             <Text style={styles.currentMonth}>{currentMonth}</Text>
 
-            <Text style={styles.sum}>102250,74 ₽</Text>
+            <Text style={styles.sum}>{parseFloat(props.total).toLocaleString(
+                'ru-RU',
+                { style: 'currency', currency: 'RUB' }
+            )}</Text>
         </SafeAreaView>
     );
 }
@@ -64,11 +71,14 @@ const styles = StyleSheet.create({
         fontSize: 48,
         color: '#eee',
         fontWeight: '600',
-        marginTop: 4
+        marginTop: 4,
+        fontFamily: 'Onest-SemiBold'
     },
     currentMonth: {
         color: '#888',
         fontSize: 12,
-        fontWeight: '500'
+        fontWeight: '500',
+        fontFamily: 'Onest-SemiBold',
+        marginBottom: -10
     }
 });
