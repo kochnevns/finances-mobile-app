@@ -12,12 +12,14 @@ import {
     Button,
     Alert,
     ActivityIndicator,
-    Dimensions
+    Dimensions,
+    TouchableOpacity
 } from 'react-native';
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 type MonthExpensesProps = {
-    report: any;
+    report: any,
+    navigation: any
 };
 
 export function CategoriesPieChart(props: MonthExpensesProps): React.JSX.Element {
@@ -120,12 +122,15 @@ export function CategoriesPieChart(props: MonthExpensesProps): React.JSX.Element
                                         alignItems: 'center',
                                         width: '100%',
                                         margin: 10,
+                                        marginBottom: 12,
                                         justifyContent: 'space-between'
                                     }}>
-                                    <View style={{ flexDirection: 'row' }}>
-                                        {renderDot(cat.color)}
-                                        <Text style={styles.category}>{cat.name}</Text>
-                                    </View>
+                                    <TouchableOpacity onPress={() => props.navigation.navigate('Expenses', { category: cat.name })}>
+                                        <View style={{ flexDirection: 'row' }}>
+                                            {renderDot(cat.color)}
+                                            <Text style={styles.category}>{cat.name}</Text>
+                                        </View>
+                                    </TouchableOpacity>
                                     <Text style={styles.amount}>{
                                         parseFloat(cat.amount).toLocaleString(
                                             'ru-RU',
@@ -154,9 +159,6 @@ export function CategoriesPieChart(props: MonthExpensesProps): React.JSX.Element
                     borderRadius: 20,
                     backgroundColor: '#171717',
                 }}>
-                <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
-                    Траты
-                </Text>
                 <View style={{ padding: 0, alignItems: 'center' }}>
                     <PieChart
                         data={pieData}

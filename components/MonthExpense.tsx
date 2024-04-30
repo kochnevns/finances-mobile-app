@@ -1,18 +1,8 @@
-import React, { useEffect, useState } from 'react';
-// import type { PropsWithChildren } from 'react';
+import React from 'react';
 import {
     SafeAreaView,
-    ScrollView,
-    StatusBar,
     StyleSheet,
     Text,
-    useColorScheme,
-    View,
-    SectionList,
-    Image,
-    Button,
-    Alert,
-    ActivityIndicator,
 } from 'react-native';
 
 import {
@@ -51,10 +41,12 @@ export function MonthExpenses(props: MonthExpensesProps): React.JSX.Element {
         <SafeAreaView style={styles.month}>
             <Text style={styles.currentMonth}>{currentMonth}</Text>
 
-            <Text style={styles.sum}>{parseFloat(props.total).toLocaleString(
-                'ru-RU',
-                { style: 'currency', currency: 'RUB' }
-            )}</Text>
+            <Text style={styles.sum}>{
+                parseFloat(props.total).toLocaleString(
+                    'ru-RU',
+                )}
+                <Text style={styles.sumCopecks}>,00 ₽</Text>
+            </Text>
         </SafeAreaView>
     );
 }
@@ -70,6 +62,13 @@ const styles = StyleSheet.create({
     sum: {
         fontSize: 48,
         color: '#eee',
+        fontWeight: '600',
+        marginTop: 4,
+        fontFamily: 'Onest-SemiBold'
+    },
+    sumCopecks: {
+        fontSize: 48,
+        color: '#777',
         fontWeight: '600',
         marginTop: 4,
         fontFamily: 'Onest-SemiBold'

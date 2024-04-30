@@ -1,62 +1,39 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
-// import type { PropsWithChildren } from 'react';
-import {
-    SafeAreaView,
-    ScrollView,
-} from 'react-native';
+import { createStackNavigator } from '@react-navigation/stack';
+import * as React from 'react';
+const Stack = createStackNavigator();
 
-import {
-    Colors,
-} from 'react-native/Libraries/NewAppScreen';
-
-import {
-    Header
-} from './../Header'
-
-import { MonthExpenses } from '../MonthExpense';
-
-import { CategoriesPieChart } from '../CategoriesPieChart';
-import { CategoriesChart } from '../CategoriesChart';
-// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-// import { NavigationContainer, DarkTheme } from '@react-navigation/native';
-
-export function Home(): React.JSX.Element {
-
-    const [totalExpenses, setTotalExpenses] = useState("");
-    const [report, setReport] = useState({});
-
-    async function fetchData() {
-        const response = await fetch('http://89.111.174.31:8082/finances.Finances/Report', {
-            method: 'POST',
-            body: JSON.stringify({
-                "type": "month"
-            })
-        })
-            .catch((error) => {
-                //Alert.alert('Ошибка', error.message + '\n' + error.stack)
-            })
-
-        const json = await response?.json();
-
-        setTotalExpenses(json.total.toString());
-        setReport(json);
-    }
-
-    useLayoutEffect(() => {
-        fetchData();
-    }, []);
+import { HomeScreen } from '../HomeComponent'
+import { ExpensesList } from '../ExpensesList';
 
 
+export function Home() {
     return (
-        <SafeAreaView style={{ flex: 1 }}>
-            <ScrollView>
-                <Header />
-                <MonthExpenses total={totalExpenses} />
-                {report.total && <CategoriesPieChart report={report} />}
-                { //<CategoriesChart /> 
+        <Stack.Navigator
+            initialRouteName="Home"
+            screenOptions={{
+                gestureEnabled: true,
+                headerMode: 'float',
+                headerTintColor: 'white',
+                headerStyle: {
+                    height: 48, // Specify the height of your custom header
+                    backgroundColor: '#000',
                 }
-            </ScrollView>
-
-        </SafeAreaView>
+            }}
+        >
+            <Stack.Screen
+                name="Home"
+                component={HomeScreen}
+                options={{
+                    title: 'Грустно',
+                }}
+            />
+            <Stack.Screen
+                name="Expenses"
+                component={ExpensesList}
+                options={{
+                    title: 'Траты по категории',
+                }}
+            />
+        </Stack.Navigator>
     );
 }

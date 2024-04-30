@@ -23,8 +23,6 @@ import { Dialog } from 'react-native-simple-dialogs';
 import { Picker } from '@react-native-picker/picker';
 import DatePicker from 'react-native-date-picker'
 
-
-
 interface Item {
     title: string;
     icon: any;
@@ -35,7 +33,7 @@ interface DataItem {
     data: Item[];
 }
 
-export function ExpensesList(): React.JSX.Element {
+export function ExpensesList({ route, navigation }): React.JSX.Element {
     const isDarkMode = useColorScheme() === 'dark'
     const [isLoading, setLoading] = useState(true)
     const [data, setData] = useState<DataItem[]>([])
@@ -95,8 +93,17 @@ export function ExpensesList(): React.JSX.Element {
 
 
     const getExpenses = async () => {
+        let methodBody: any = {}
+
+        if (route.params?.category) {
+            methodBody = {
+                category: route.params.category
+            }
+        }
+
         const response = await fetch('http://89.111.174.31:8082/finances.Finances/ExpensesList', {
             method: 'POST',
+            body: JSON.stringify(methodBody),
         })
             .catch((error) => {
                 Alert.alert('Ошибка', error.message + '\n' + error.stack)
@@ -160,8 +167,12 @@ export function ExpensesList(): React.JSX.Element {
     };
 
     useEffect(() => {
-        getExpenses()
-    }, []);
+        const unsubscribe = navigation.addListener('focus', () => {
+            console.log("FOCUS EXPENSES")
+            getExpenses()
+        })
+        return unsubscribe
+    }, [navigation]);
 
     async function saveExpense() {
         setLoading(true)
@@ -223,72 +234,6 @@ export function ExpensesList(): React.JSX.Element {
                     />
                 </View>
             )}
-
-            <TouchableOpacity onPress={() => setDialogVisible(true)} style={styles.appButtonContainer}>
-                <Image style={styles.add} source={require('./../assets/add.png')} />
-            </TouchableOpacity>
-
-            <Dialog
-                visible={dialogVisible}
-                title="Новая трата"
-                titleStyle={styles.dialogTitle}
-                dialogStyle={styles.dialogStyle}
-                onTouchOutside={() => setDialogVisible(false)}
-            >
-                <View>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="На что потратили"
-                        value={description}
-                        onChangeText={(t) => setDescription(t)}
-                    />
-
-                    <TextInput
-                        style={styles.input}
-                        keyboardType='numeric'
-                        placeholder="Сколько потратили"
-                        value={amount.toString()}
-                        onChangeText={(t) => setAmount(t)}
-                    />
-
-                    <View style={styles.whenWrapper}>
-                        <Text style={styles.whenLabel}>Когда</Text>
-                        <TouchableOpacity onPress={() => setdatePickerOpen(true)} >
-                            <Text style={styles.whenDate}>{date.toLocaleDateString()}</Text>
-                        </TouchableOpacity>
-
-                    </View>
-
-                    <DatePicker date={date} onDateChange={setDate} mode='date' modal={true}
-                        open={datePickerOpen}
-                        onConfirm={(date) => {
-                            setdatePickerOpen(false)
-                            setDate(date)
-                        }}
-                        onCancel={() => {
-                            setdatePickerOpen(false)
-                        }}
-                    />
-                    <View style={styles.catWrapper}>
-                        <Text style={styles.catLabel}>Категория</Text>
-                        <Picker
-                            style={styles.picker}
-                            mode='dropdown'
-                            selectedValue={selectedCategory}
-                            onValueChange={currentCategory => setSelectedCategory(currentCategory)}>
-                            {categories.map((item, i) => {
-                                return (<Picker.Item label={item} value={item} key={i} />)
-                            })
-                            }
-                        </Picker>
-                    </View>
-
-                    <TouchableOpacity onPress={saveExpense} style={styles.addBtnWrapper} disabled={isLoading}>
-                        <Text style={styles.addExpenseBtn}>Добавить</Text>
-                    </TouchableOpacity>
-                </View>
-            </Dialog>
-
         </SafeAreaView>
     );
 }
@@ -298,127 +243,11 @@ const styles = StyleSheet.create({
     loading: {
         height: '100%',
     },
-
-    addExpenseBtn: {
-        fontSize: 14, fontFamily: 'Onest-Regular', color: '#fff',
-        margin: 10
-    },
-
-    addBtnWrapper: {
-        width: 100,
-        backgroundColor: '#005dc7',
-        color: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 40,
-        alignSelf: 'flex-end',
-        borderRadius: 10,
-        shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.6, shadowRadius: 2,
-    },
-
-    whenWrapper: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        margin: 10,
-    },
-
-
-    catWrapper: {
-        flexDirection: 'row',
-    },
-
-    picker: {
-        margin: -6,
-        fontFamily: 'Onest-Regular',
-        width: 220
-    },
-
-    catLabel: {
-        fontFamily: 'Onest-Regular',
-        margin: 10,
-        marginBottom: 0
-    },
-
-    whenDate: {
-        color: '#fff',
-        fontFamily: 'Onest-SemiBold'
-    },
-    whenLabel: {
-        fontFamily: 'Onest-Regular'
-    },
-
-    dialogTitle: {
-        fontFamily: 'Onest-SemiBold',
-        color: '#fff',
-    },
-    dialogStyle: {
-        backgroundColor: '#111',
-        color: '#fff',
-        borderRadius: 10
-    },
-    input: {
-        height: 40,
-        color: '#fff',
-        margin: 10,
-        borderWidth: 1,
-        borderColor: '#333',
-        borderRadius: 6,
-        padding: 10,
-        fontFamily: 'Onest-SemiBold',
-    },
-    appButtonContainer: {
-        position: 'absolute',
-        bottom: 16,
-        right: 16,
-        elevation: 8,
-        backgroundColor: "#00b3a1",
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        zIndex: 200,
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        transform: [{ scale: 0.76 }],
-        shadowColor: '#333',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.8,
-    },
-    add: {
-        width: 40,
-        height: 40,
-        marginTop: 2,
-    },
-    sectionContainer: {
-        marginTop: 32,
-        paddingHorizontal: 24,
-    },
-    sectionTitle: {
-        fontSize: 24,
-        fontWeight: '600',
-        color: '#fff',
-    },
-    sectionDescription: {
-        marginTop: 8,
-        fontSize: 18,
-        fontWeight: '400',
-    },
-    highlight: {
-        fontWeight: '700',
-    },
-
-    section: {
-        color: "#fff"
-    },
-    container: {
-        flex: 1,
-        paddingTop: StatusBar.currentHeight,
-        marginHorizontal: 16,
-    },
     item: {
         backgroundColor: "#111",
         padding: 10,
-        marginVertical: 0,
+        paddingBottom: 16,
+        paddingTop: 16,
         fontFamily: 'Onest-Regular',
         fontSize: 12,
         display: 'flex',
